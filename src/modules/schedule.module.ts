@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ScheduleController } from './schedule.controller';
+import { ScheduleController } from '../controllers/schedule.controller';
 
 @Module({
   controllers: [ScheduleController],
