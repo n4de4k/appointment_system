@@ -40,28 +40,31 @@ export class ReadScheduleSlotService {
 
     const slots: ScheduleSlot[] = [];
     while (currentTime.isBefore(periodEnd)) {
-      const appointmentsOnDate =
-        associatedAppointmentByDate.get(currentTime.format('YYYY-MM-DD')) ?? [];
       const slotStartTime = currentTime.clone();
       currentTime.add(timeFrame, 'minutes');
 
-      const appointmentTime = currentTime.clone();
-      let totalBookedAppointment = 0;
-      for (const appointment of appointmentsOnDate) {
-        appointmentTime.set({
-          hour: appointment.hour,
-          minute: appointment.minute,
-        });
-
-        if (
-          appointmentTime.isSameOrAfter(slotStartTime) &&
-          appointmentTime.isBefore(currentTime)
-        )
-          totalBookedAppointment += 1;
-      }
-
-      const availableSlot = maxAppointmentSlot - totalBookedAppointment;
       if (!this.isTimePassEndOfDay(currentTime)) {
+        const appointmentsOnDate =
+          associatedAppointmentByDate.get(currentTime.format('YYYY-MM-DD')) ??
+          [];
+
+        const appointmentTime = currentTime.clone();
+
+        let totalBookedAppointment = 0;
+        for (const appointment of appointmentsOnDate) {
+          appointmentTime.set({
+            hour: appointment.hour,
+            minute: appointment.minute,
+          });
+
+          if (
+            appointmentTime.isSameOrAfter(slotStartTime) &&
+            appointmentTime.isBefore(currentTime)
+          )
+            totalBookedAppointment += 1;
+        }
+
+        const availableSlot = maxAppointmentSlot - totalBookedAppointment;
         slots.push({
           date: slotStartTime.format('YYYY-MM-DD'),
           hour: slotStartTime.format('HH:mm'),
