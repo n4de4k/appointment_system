@@ -6,4 +6,5 @@ export class ReadAvailableSlotSpec {
 export class ScheduleSlot {
   date: string;
   hour: string;
+  availableSlots: number;
 }
