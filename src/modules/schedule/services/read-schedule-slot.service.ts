@@ -46,7 +46,7 @@ export class ReadScheduleSlotService {
 
         if (
           appointmentTime.isSameOrAfter(slotStartTime) &&
-          appointmentTime.isSameOrBefore(currentTime)
+          appointmentTime.isBefore(currentTime)
         )
           totalBookedAppointment += 1;
       }

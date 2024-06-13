@@ -1,7 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/@common/decorators/api-success-response.decorator';
 import { ReadScheduleSlotService } from 'src/modules/schedule/services/read-schedule-slot.service';
+import { GetAvailableScheduleSlotRequest } from './dto/schedule-slot.dto';
 
 export class Foo {
   @ApiProperty()
@@ -19,10 +20,19 @@ export class ScheduleController {
     summary: 'Get available slot from period of time',
   })
   @ApiSuccessResponse(Foo, 'Successfully get available slot')
-  async getAvailableSlots() {
+  async getAvailableSlots(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    request: GetAvailableScheduleSlotRequest,
+  ) {
     return await this.readScheduleSlotService.getAvailableSlot({
-      periodStart: '2024-06-01',
-      periodEnd: '2024-06-02',
+      periodStart: request.periodStart,
+      periodEnd: request.periodEnd,
     });
   }
 }
