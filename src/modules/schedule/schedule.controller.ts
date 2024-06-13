@@ -1,13 +1,14 @@
-import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
-import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
-import { ApiSuccessResponse } from 'src/@common/decorators/api-success-response.decorator';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReadScheduleSlotService } from 'src/modules/schedule/services/read-schedule-slot.service';
 import { GetAvailableScheduleSlotRequest } from './dto/schedule-slot.dto';
 
-export class Foo {
-  @ApiProperty()
-  foo: string;
-}
 @Controller('schedules')
 @ApiTags('Schedule')
 export class ScheduleController {
@@ -19,7 +20,14 @@ export class ScheduleController {
   @ApiOperation({
     summary: 'Get available slot from period of time',
   })
-  @ApiSuccessResponse(Foo, 'Successfully get available slot')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully get slot',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid request param',
+  })
   async getAvailableSlots(
     @Query(
       new ValidationPipe({

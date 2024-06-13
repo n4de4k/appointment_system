@@ -7,7 +7,7 @@ export class ServiceException extends HttpException {
       errorCode.message,
       ServiceException.ASSOCIATED_ERROR_CODE_TO_STATUS_CODE.get(
         errorCode.code,
-      ) ?? HttpStatus.INTERNAL_SERVER_ERROR,
+      ) ?? HttpStatus.BAD_REQUEST,
     );
   }
 

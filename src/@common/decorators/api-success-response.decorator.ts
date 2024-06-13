@@ -16,8 +16,8 @@ export const ApiSuccessResponse = <DataDto extends Type<unknown>>(
           {
             properties: {
               data: {
-                type: 'object',
-                $ref: getSchemaPath(dataDto),
+                type: 'array',
+                items: { $ref: getSchemaPath(dataDto) },
               },
             },
           },
