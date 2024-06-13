@@ -7,5 +7,6 @@ import { AppointmentModule } from '../appointment/appointment.module';
   imports: [AppointmentModule],
   controllers: [ScheduleController],
   providers: [ReadScheduleSlotService],
+  exports: [ReadScheduleSlotService],
 })
 export class ScheduleModule {}

@@ -7,6 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ReadAppointmentService } from 'src/modules/appointment/service/read-appointment.service';
 import { Appointment } from 'src/modules/appointment/model/appointment.model';
+import { ServiceException } from 'src/@common/exception/service.exception';
+import { ErrorCode } from 'src/@common/exception/error.code';
 
 @Injectable()
 export class ReadScheduleSlotService {
@@ -16,8 +18,11 @@ export class ReadScheduleSlotService {
   ) {}
 
   async getAvailableSlot(spec: ReadAvailableSlotSpec) {
-    const maxAppointmentSlot = +this.configService.get<number>(
+    const maxAppointmentSlot = +this.configService.getOrThrow<number>(
       'MAX_APPOINTMENT_SLOT',
+    );
+    const timeFrame = +this.configService.getOrThrow<number>(
+      'TIME_FRAME_IN_MINUTE',
     );
 
     const associatedAppointmentByDate =
@@ -29,12 +34,16 @@ export class ReadScheduleSlotService {
     const currentTime = moment(spec.periodStart);
     this.setTimeAtStartOfDay(currentTime);
 
+    if (currentTime.isAfter(periodEnd)) {
+      throw new ServiceException(ErrorCode.periodStartMoreThanEnd);
+    }
+
     const slots: ScheduleSlot[] = [];
     while (currentTime.isBefore(periodEnd)) {
       const appointmentsOnDate =
         associatedAppointmentByDate.get(currentTime.format('YYYY-MM-DD')) ?? [];
       const slotStartTime = currentTime.clone();
-      currentTime.add(30, 'minutes');
+      currentTime.add(timeFrame, 'minutes');
 
       const appointmentTime = currentTime.clone();
       let totalBookedAppointment = 0;
@@ -51,11 +60,12 @@ export class ReadScheduleSlotService {
           totalBookedAppointment += 1;
       }
 
+      const availableSlot = maxAppointmentSlot - totalBookedAppointment;
       if (!this.isTimePassEndOfDay(currentTime)) {
         slots.push({
           date: slotStartTime.format('YYYY-MM-DD'),
           hour: slotStartTime.format('HH:mm'),
-          availableSlots: maxAppointmentSlot - totalBookedAppointment,
+          availableSlots: availableSlot < 0 ? 0 : availableSlot,
         });
       } else {
         currentTime.add(1, 'days');
