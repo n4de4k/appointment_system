@@ -24,15 +24,26 @@ export class ReadScheduleSlotService {
     const timeFrame = +this.configService.getOrThrow<number>(
       'TIME_FRAME_IN_MINUTE',
     );
+    const startOperationalHour = +this.configService.getOrThrow<number>(
+      'OPERATIONAL_START_HOUR',
+    );
+    const endOperationalHour = +this.configService.getOrThrow<number>(
+      'OPERATIONAL_END_HOUR',
+    );
 
     const associatedAppointmentByDate =
       await this.getAssociatedAppointmentByDate(spec);
 
     const periodEnd = moment(spec.periodEnd);
-    periodEnd.set({ hour: 18, minute: 0, second: 0, millisecond: 0 });
+    periodEnd.set({
+      hour: endOperationalHour,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
 
     const currentTime = moment(spec.periodStart);
-    this.setTimeAtStartOfDay(currentTime);
+    this.setTimeAtStartOfDay(currentTime, startOperationalHour);
 
     if (currentTime.isAfter(periodEnd)) {
       throw new ServiceException(ErrorCode.periodStartMoreThanEnd);
@@ -43,7 +54,7 @@ export class ReadScheduleSlotService {
       const slotStartTime = currentTime.clone();
       currentTime.add(timeFrame, 'minutes');
 
-      if (!this.isTimePassEndOfDay(currentTime)) {
+      if (currentTime.hour() <= endOperationalHour) {
         const appointmentsOnDate =
           associatedAppointmentByDate.get(currentTime.format('YYYY-MM-DD')) ??
           [];
@@ -72,7 +83,7 @@ export class ReadScheduleSlotService {
         });
       } else {
         currentTime.add(1, 'days');
-        this.setTimeAtStartOfDay(currentTime);
+        this.setTimeAtStartOfDay(currentTime, startOperationalHour);
       }
     }
 
@@ -100,11 +111,15 @@ export class ReadScheduleSlotService {
     return result;
   }
 
-  private isTimePassEndOfDay(time: moment.Moment): boolean {
-    return time.hour() > 18;
-  }
-
-  private setTimeAtStartOfDay(time: moment.Moment) {
-    time.set({ hour: 9, minute: 0, second: 0, millisecond: 0 });
+  private setTimeAtStartOfDay(
+    time: moment.Moment,
+    startOperationalHour: number,
+  ) {
+    time.set({
+      hour: startOperationalHour,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
   }
 }
