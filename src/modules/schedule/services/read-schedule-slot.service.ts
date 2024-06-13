@@ -30,7 +30,11 @@ export class ReadScheduleSlotService {
     const endOperationalHour = +this.configService.getOrThrow<number>(
       'OPERATIONAL_END_HOUR',
     );
-
+    const operationalDays = this.configService
+      .getOrThrow<string>('OPERATIONAL_DAYS')
+      .split('-')
+      .map((dayStr) => +dayStr);
+    console.log({ operationalDays });
     const associatedAppointmentByDate =
       await this.getAssociatedAppointmentByDate(spec);
 
@@ -54,7 +58,15 @@ export class ReadScheduleSlotService {
       const slotStartTime = currentTime.clone();
       currentTime.add(timeFrame, 'minutes');
 
-      if (currentTime.hour() <= endOperationalHour) {
+      const dayOfWeek = currentTime.day();
+
+      if (
+        !operationalDays.includes(dayOfWeek) ||
+        currentTime.hour() > endOperationalHour
+      ) {
+        currentTime.add(1, 'days');
+        this.setTimeAtStartOfDay(currentTime, startOperationalHour);
+      } else {
         const appointmentsOnDate =
           associatedAppointmentByDate.get(currentTime.format('YYYY-MM-DD')) ??
           [];
@@ -81,9 +93,6 @@ export class ReadScheduleSlotService {
           hour: slotStartTime.format('HH:mm'),
           availableSlots: availableSlot < 0 ? 0 : availableSlot,
         });
-      } else {
-        currentTime.add(1, 'days');
-        this.setTimeAtStartOfDay(currentTime, startOperationalHour);
       }
     }
 
