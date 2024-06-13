@@ -5,7 +5,7 @@
 The main logic is to generate slot by adding time frame (for example 30 minutes) in a loop until the end period. And in every loop, check total appointment and reduce it from max slot configured.
 The assumption is when the time frame configuration changed, and somehow the total appointment exceed the slot configured, the available slot who is currently negative, automatically set to 0
 
-![Implementation Flow Chart](docs/available-slot-flowchart.png)
+![Implementation Flow Chart](docs/available-slot-flowchart-diagram.png)
 
 ### How to start
 
